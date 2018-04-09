@@ -60,9 +60,35 @@ public class OptimalBSTMapFactory {
         
         // The number of keys (so we don't need to say keys.length every time)
         int n = keys.length;
+        
+        Internal[][] nodes = new Internal[n][n];
+        double[][] cost = new double[n][n]; // C[i][j]
+        double[][] weight = new double[n][n]; // T[i][j]
+        
+        // initialize bottom diagonal with miss probabilities and leaf nodes
+        for(int i = 0; i < n; i++) {
+        	weight[i][i] = missProbs[i];
+        	nodes[i][i] = new Internal(null, keys[i], values[i], null);;
+        	cost[i][i] = missProbs[i];
+        }
+        
+        int space = 1;
+        weight[0][n] = -1; // set the root to -1
+        
+        // repeat the for loop until the root of the entire tree is discovered
+        while(weight[0][n] == -1) {
+        	// loop through each diagonal
+        	for(int d = 0; d+space <= n; d++) {
+        		int s = d + space; // the second value for the matrix
+        		weight[d][s] = weight[d][s-1] + keyProbs[s] + missProbs[s];
+        	}
+        	space++;
+        }
+        
+        
 
+		return new OptimalBSTMap(nodes[0][n]);
 
-        throw new UnsupportedOperationException();
     }
 
     /**
