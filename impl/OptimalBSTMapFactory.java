@@ -57,6 +57,9 @@ public class OptimalBSTMapFactory {
      */
     public static OptimalBSTMap buildOptimalBST(String[] keys, String[] values, double[] keyProbs,
             double[] missProbs) {
+    	
+
+    	
         // keep these checks
         checkLengths(keys, values, keyProbs, missProbs);
         checkProbs(keyProbs, missProbs);        
@@ -78,13 +81,14 @@ public class OptimalBSTMapFactory {
         int space = 1;
         weight[0][n-1] = -1; // set the root to -1
         
+        
         for(int i = 0; i < n; i++) {
         	for(int j = 0; j < n; j++) {
-        		nodes[i][j] = new Internal(null, "bob", "pizza", null);
+        		nodes[i][j] = new Internal(dummy, null, null, dummy);
         	}
         }
+
        
-        
         // repeat the for loop until the root of the entire tree is discovered
         while(weight[0][n-1] == -1) {
         	// loop through each diagonal
@@ -93,19 +97,30 @@ public class OptimalBSTMapFactory {
 
         		// one node
         		if(space == 1) {
-                	nodes[d][s] = new Internal(null, keys[s], values[s], null);
+            		System.out.print(d + ",");
+            		System.out.print(s + " ");
+            		System.out.println();
+
+                	nodes[d][s] = new Internal(dummy, keys[d], values[d], dummy);
             		weight[d][s] = weight[d][s-1] + keyProbs[s] + missProbs[s];
             		cost[d][s] = weight[d][s] + cost[d][d] + cost[s][s];
             		continue;
         		}
         		
-        			System.out.println("DOESN");
         		
         		// multiple nodes
         		weight[d][s] = weight[d][s-1] + keyProbs[s] + missProbs[s];
         		double min = minCost(d,s, cost);
         		cost[d][s] = weight[d][s] + min;
-        		nodes[d][s] = new Internal(nodes[d][parent-1], nodes[parent-1][parent].key, nodes[parent-1][parent].value, nodes[parent][s]);
+        		
+        		
+        		
+        		if(nodes[d][parent-1].key == null)
+        			nodes[d][s] = new Internal(dummy, nodes[parent-1][parent].key, nodes[parent-1][parent].value, nodes[parent][s]);
+        		else if(nodes[parent][s].key == null)
+        			nodes[d][s] = new Internal(nodes[d][parent-1], nodes[parent-1][parent].key, nodes[parent-1][parent].value, dummy);
+        		else
+        			nodes[d][s] = new Internal(nodes[d][parent-1], nodes[parent-1][parent].key, nodes[parent-1][parent].value, nodes[parent][s]);
 
         		/*
         		nodes[d][s] = nodes[parent-1][parent];
@@ -125,6 +140,17 @@ public class OptimalBSTMapFactory {
         }
         */
         
+       
+        for(int i = 0; i < n; i++) {
+        	System.out.print(keys[i] + " ");
+        }
+        System.out.println();
+		
+        System.out.println("SDKL:FJSDL:F:     " + keys[n-1]);
+        
+        System.out.println(nodes[0][n-1].toString());
+        System.out.println(nodes[0][n-1].key);
+
 
 		return new OptimalBSTMap(nodes[0][n-1]);
 
