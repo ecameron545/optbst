@@ -20,6 +20,9 @@ import impl.OptimalBSTMap.Internal;
  */
 
 public class OptimalBSTMapFactory {
+	
+    static int parent = -1;
+
 
     /**
      * Exception to throw if the input to building an optimal BST
@@ -64,6 +67,7 @@ public class OptimalBSTMapFactory {
         Internal[][] nodes = new Internal[n][n];
         double[][] cost = new double[n][n]; // C[i][j]
         double[][] weight = new double[n][n]; // T[i][j]
+       
         
         // initialize bottom diagonal with miss probabilities and leaf nodes
         for(int i = 0; i < n; i++) {
@@ -74,20 +78,40 @@ public class OptimalBSTMapFactory {
         int space = 1;
         weight[0][n-1] = -1; // set the root to -1
         
+        for(int i = 0; i < n; i++) {
+        	for(int j = 0; j < n; j++) {
+        		nodes[i][j] = new Internal(null, "bob", "pizza", null);
+        	}
+        }
+       
+        
         // repeat the for loop until the root of the entire tree is discovered
         while(weight[0][n-1] == -1) {
         	// loop through each diagonal
         	for(int d = 0; d+space < n; d++) {
         		int s = d + space; // the second value for the matrix
 
-        		/*
+        		// one node
         		if(space == 1) {
-                	nodes[d][s] = new Internal(null, keys[d], values[i], null);;
+                	nodes[d][s] = new Internal(null, keys[s], values[s], null);
+            		weight[d][s] = weight[d][s-1] + keyProbs[s] + missProbs[s];
+            		cost[d][s] = weight[d][s] + cost[d][d] + cost[s][s];
+            		continue;
         		}
-        		*/
         		
+        			System.out.println("DOESN");
+        		
+        		// multiple nodes
         		weight[d][s] = weight[d][s-1] + keyProbs[s] + missProbs[s];
-        		cost[d][s] = weight[d][s];
+        		double min = minCost(d,s, cost);
+        		cost[d][s] = weight[d][s] + min;
+        		nodes[d][s] = new Internal(nodes[d][parent-1], nodes[parent-1][parent].key, nodes[parent-1][parent].value, nodes[parent][s]);
+
+        		/*
+        		nodes[d][s] = nodes[parent-1][parent];
+        		nodes[d][s].left = nodes[d][parent-1];
+        		nodes[d][s].right = nodes[parent][s];
+        		*/
         	}
         	space++;
         }
@@ -95,7 +119,7 @@ public class OptimalBSTMapFactory {
         /*
         for(int i = 0; i < n; i++) {
         	for(int j = 0; j < n; j++) {
-        		System.out.print(cost[i][j] + "|");
+        		System.out.print(nodes[i][j].key + "|");
         	}
         	System.out.println("");
         }
@@ -105,6 +129,24 @@ public class OptimalBSTMapFactory {
 		return new OptimalBSTMap(nodes[0][n-1]);
 
     }
+    
+    public static double minCost(int d, int s, double[][] cost) {
+    	double min = Double.MAX_VALUE;
+    	int subRoot = -1;
+    	
+    	for(int i = d; i < s; i++) {
+    		double mini = cost[d][i] + cost[i+1][s];
+    		if(mini < min) {
+    			min = mini;
+    			subRoot = i + 1;
+    		}	
+    	}
+    	
+    	parent = subRoot;
+    	return min;
+    }
+    
+    
 
     /**
      * Check that the given probabilities sum to 1, throw an
