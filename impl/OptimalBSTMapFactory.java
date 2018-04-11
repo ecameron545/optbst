@@ -68,26 +68,41 @@ public class OptimalBSTMapFactory {
         // initialize bottom diagonal with miss probabilities and leaf nodes
         for(int i = 0; i < n; i++) {
         	weight[i][i] = missProbs[i];
-        	nodes[i][i] = new Internal(null, keys[i], values[i], null);;
         	cost[i][i] = missProbs[i];
         }
         
         int space = 1;
-        weight[0][n] = -1; // set the root to -1
+        weight[0][n-1] = -1; // set the root to -1
         
         // repeat the for loop until the root of the entire tree is discovered
-        while(weight[0][n] == -1) {
+        while(weight[0][n-1] == -1) {
         	// loop through each diagonal
-        	for(int d = 0; d+space <= n; d++) {
+        	for(int d = 0; d+space < n; d++) {
         		int s = d + space; // the second value for the matrix
+
+        		/*
+        		if(space == 1) {
+                	nodes[d][s] = new Internal(null, keys[d], values[i], null);;
+        		}
+        		*/
+        		
         		weight[d][s] = weight[d][s-1] + keyProbs[s] + missProbs[s];
+        		cost[d][s] = weight[d][s];
         	}
         	space++;
         }
         
+        /*
+        for(int i = 0; i < n; i++) {
+        	for(int j = 0; j < n; j++) {
+        		System.out.print(cost[i][j] + "|");
+        	}
+        	System.out.println("");
+        }
+        */
         
 
-		return new OptimalBSTMap(nodes[0][n]);
+		return new OptimalBSTMap(nodes[0][n-1]);
 
     }
 
