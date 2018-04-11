@@ -67,10 +67,10 @@ public class OptimalBSTMapFactory {
         // The number of keys (so we don't need to say keys.length every time)
         int n = keys.length;
         
-        Internal[][] nodes = new Internal[n][n];
-        double[][] cost = new double[n][n]; // C[i][j]
-        double[][] weight = new double[n][n]; // T[i][j]
-       
+        Internal[][] nodes = new Internal[n + 1][n + 1];
+        double[][] cost = new double[n + 1][n + 1]; // C[i][j]
+        double[][] weight = new double[n + 1][n + 1]; // T[i][j]
+
         
         // initialize bottom diagonal with miss probabilities and leaf nodes
         for(int i = 0; i < n; i++) {
@@ -79,41 +79,39 @@ public class OptimalBSTMapFactory {
         }
         
         int space = 1;
-        weight[0][n-1] = -1; // set the root to -1
+        weight[0][n] = -1; // set the root to -1
         
-        
-        for(int i = 0; i < n; i++) {
-        	for(int j = 0; j < n; j++) {
+
+        for(int i = 0; i <= n; i++) {
+        	for(int j = 0; j <= n; j++) {
         		nodes[i][j] = new Internal(dummy, null, null, dummy);
         	}
         }
 
        
         // repeat the for loop until the root of the entire tree is discovered
-        while(weight[0][n-1] == -1) {
+        while(weight[0][n] == -1) {
+
         	// loop through each diagonal
-        	for(int d = 0; d+space < n; d++) {
+        	for(int d = 0; d+space <= n; d++) {
         		int s = d + space; // the second value for the matrix
 
         		// one node
         		if(space == 1) {
-            		System.out.print(d + ",");
-            		System.out.print(s + " ");
-            		System.out.println();
-
-                	nodes[d][s] = new Internal(dummy, keys[d], values[d], dummy);
-            		weight[d][s] = weight[d][s-1] + keyProbs[s] + missProbs[s];
+        			
+                	nodes[d][s] = new Internal(dummy, keys[s-1], values[s-1], dummy);
+            		weight[d][s] = weight[d][s-1] + keyProbs[s-1] + missProbs[s-1];
             		cost[d][s] = weight[d][s] + cost[d][d] + cost[s][s];
+
             		continue;
         		}
         		
         		
         		// multiple nodes
-        		weight[d][s] = weight[d][s-1] + keyProbs[s] + missProbs[s];
+        		weight[d][s] = weight[d][s-1] + keyProbs[s-1] + missProbs[s-1];
         		double min = minCost(d,s, cost);
         		cost[d][s] = weight[d][s] + min;
-        		
-        		
+  
         		
         		if(nodes[d][parent-1].key == null)
         			nodes[d][s] = new Internal(dummy, nodes[parent-1][parent].key, nodes[parent-1][parent].value, nodes[parent][s]);
@@ -122,37 +120,34 @@ public class OptimalBSTMapFactory {
         		else
         			nodes[d][s] = new Internal(nodes[d][parent-1], nodes[parent-1][parent].key, nodes[parent-1][parent].value, nodes[parent][s]);
 
-        		/*
-        		nodes[d][s] = nodes[parent-1][parent];
-        		nodes[d][s].left = nodes[d][parent-1];
-        		nodes[d][s].right = nodes[parent][s];
-        		*/
+
         	}
         	space++;
         }
+    	//System.out.print(nodes[0][20]);
+
         
-        /*
-        for(int i = 0; i < n; i++) {
-        	for(int j = 0; j < n; j++) {
-        		System.out.print(nodes[i][j].key + "|");
+        /* 
+        for(int i = 0; i < n+1; i++) {
+        	for(int j = 0; j < n+1; j++) {
+        		System.out.print(cost[i][j] + "|");
         	}
         	System.out.println("");
         }
-        */
+       */
+		
         
-       
+       /*
         for(int i = 0; i < n; i++) {
         	System.out.print(keys[i] + " ");
         }
         System.out.println();
 		
-        System.out.println("SDKL:FJSDL:F:     " + keys[n-1]);
         
-        System.out.println(nodes[0][n-1].toString());
-        System.out.println(nodes[0][n-1].key);
+        System.out.println(nodes[0][n]);
+*/
 
-
-		return new OptimalBSTMap(nodes[0][n-1]);
+		return new OptimalBSTMap(nodes[0][n]);
 
     }
     
@@ -162,13 +157,17 @@ public class OptimalBSTMapFactory {
     	
     	for(int i = d; i < s; i++) {
     		double mini = cost[d][i] + cost[i+1][s];
+    	
     		if(mini < min) {
+    	    	
     			min = mini;
     			subRoot = i + 1;
+    			
     		}	
     	}
     	
     	parent = subRoot;
+    	
     	return min;
     }
     
