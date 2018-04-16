@@ -71,9 +71,9 @@ public class OptimalBSTMapFactory {
         double[][] cost = new double[n + 1][n + 1]; // cost of each subtree
         double[][] weight = new double[n + 1][n + 1]; // weight of each subtree
 
-        
-        // initialize bottom diagonals of weight and cost with miss probabilities
-        for(int i = 0; i < n; i++) {
+
+        // initialize bottom diagonal with miss probabilities and leaf nodes
+        for(int i = 0; i <= n; i++) {
         	weight[i][i] = missProbs[i];
         	cost[i][i] = missProbs[i];
         }
@@ -97,30 +97,28 @@ public class OptimalBSTMapFactory {
 
         		// subtree contain one node
         		if(level == 1) {
-
         			nodes[d][s] = new Internal(dummy, keys[s-1], values[s-1], dummy);
-            		weight[d][s] = weight[d][s-1] + keyProbs[s-1] + missProbs[s];
+        			weight[d][s] = weight[d][s-1] + keyProbs[s-1] + missProbs[s];
             		cost[d][s] = weight[d][s] + cost[d][d] + cost[s][s];
-
             		continue;
         		}
-        		
-        		
+        			
+        			
         		// subtrees contain multiple nodes
         		weight[d][s] = weight[d][s-1] + keyProbs[s-1] + missProbs[s];
         		double min = minCost(d,s, cost);
         		cost[d][s] = weight[d][s] + min;
   
         		
-        		//left child needs to be null for the current node
+        		//left child of the current node needs to be null
         		if(nodes[d][parent-1].key == null)
         			nodes[d][s] = new Internal(dummy, nodes[parent-1][parent].key, nodes[parent-1][parent].value, nodes[parent][s]);
         		
-        		// right child needs to be null for the current node
+        		//right child of the current node needs to be null
         		else if(nodes[parent][s].key == null)
         			nodes[d][s] = new Internal(nodes[d][parent-1], nodes[parent-1][parent].key, nodes[parent-1][parent].value, dummy);
         		
-        		//neither left or right child for the current node are null
+        		//neither left or right child of the current node are null
         		else
         			nodes[d][s] = new Internal(nodes[d][parent-1], nodes[parent-1][parent].key, nodes[parent-1][parent].value, nodes[parent][s]);
 
@@ -128,7 +126,7 @@ public class OptimalBSTMapFactory {
         	}
         	level++; // increase the diagonal level
         }
-
+        
         // return the root of the optimal bst
 		return new OptimalBSTMap(nodes[0][n]);
 
