@@ -67,20 +67,19 @@ public class OptimalBSTMapFactory {
         // The number of keys (so we don't need to say keys.length every time)
         int n = keys.length;
         
-        Internal[][] nodes = new Internal[n + 1][n + 1];
-        double[][] cost = new double[n + 1][n + 1]; // C[i][j]
-        double[][] weight = new double[n + 1][n + 1]; // T[i][j]
+        Internal[][] nodes = new Internal[n + 1][n + 1]; // optimal subtrees
+        double[][] cost = new double[n + 1][n + 1]; // cost of each subtree
+        double[][] weight = new double[n + 1][n + 1]; // weight of each subtree
 
         
-        // initialize bottom diagonal with miss probabilities and leaf nodes
+        // initialize bottom diagonals of weight and cost with miss probabilities
         for(int i = 0; i < n; i++) {
         	weight[i][i] = missProbs[i];
         	cost[i][i] = missProbs[i];
         }
         
-        int space = 1;
+        int level = 1; // the diagonal level that the algorithm is currently on
         weight[0][n] = -1; // set the root to -1
-        
 
         for(int i = 0; i <= n; i++) {
         	for(int j = 0; j <= n; j++) {
@@ -89,69 +88,59 @@ public class OptimalBSTMapFactory {
         }
 
        
-        // repeat the for loop until the root of the entire tree is discovered
+        // repeat until the last spot is contains and optimal root
         while(weight[0][n] == -1) {
 
-        	// loop through each diagonal
-        	for(int d = 0; d+space <= n; d++) {
-        		int s = d + space; // the second value for the matrix
+        	// loop through each diagonal on the current level
+        	for(int d = 0; d+level <= n; d++) {
+        		int s = d + level; // the second value for the matrix
 
-        		// one node
-        		if(space == 1) {
-        			
-                	nodes[d][s] = new Internal(dummy, keys[s-1], values[s-1], dummy);
-            		weight[d][s] = weight[d][s-1] + keyProbs[s-1] + missProbs[s-1];
+        		// subtree contain one node
+        		if(level == 1) {
+
+        			nodes[d][s] = new Internal(dummy, keys[s-1], values[s-1], dummy);
+            		weight[d][s] = weight[d][s-1] + keyProbs[s-1] + missProbs[s];
             		cost[d][s] = weight[d][s] + cost[d][d] + cost[s][s];
 
             		continue;
         		}
         		
         		
-        		// multiple nodes
-        		weight[d][s] = weight[d][s-1] + keyProbs[s-1] + missProbs[s-1];
+        		// subtrees contain multiple nodes
+        		weight[d][s] = weight[d][s-1] + keyProbs[s-1] + missProbs[s];
         		double min = minCost(d,s, cost);
         		cost[d][s] = weight[d][s] + min;
   
         		
+        		//left child needs to be null for the current node
         		if(nodes[d][parent-1].key == null)
         			nodes[d][s] = new Internal(dummy, nodes[parent-1][parent].key, nodes[parent-1][parent].value, nodes[parent][s]);
+        		
+        		// right child needs to be null for the current node
         		else if(nodes[parent][s].key == null)
         			nodes[d][s] = new Internal(nodes[d][parent-1], nodes[parent-1][parent].key, nodes[parent-1][parent].value, dummy);
+        		
+        		//neither left or right child for the current node are null
         		else
         			nodes[d][s] = new Internal(nodes[d][parent-1], nodes[parent-1][parent].key, nodes[parent-1][parent].value, nodes[parent][s]);
 
 
         	}
-        	space++;
+        	level++; // increase the diagonal level
         }
-    	//System.out.print(nodes[0][20]);
 
-        
-        /* 
-        for(int i = 0; i < n+1; i++) {
-        	for(int j = 0; j < n+1; j++) {
-        		System.out.print(cost[i][j] + "|");
-        	}
-        	System.out.println("");
-        }
-       */
-		
-        
-       /*
-        for(int i = 0; i < n; i++) {
-        	System.out.print(keys[i] + " ");
-        }
-        System.out.println();
-		
-        
-        System.out.println(nodes[0][n]);
-*/
-
+        // return the root of the optimal bst
 		return new OptimalBSTMap(nodes[0][n]);
 
     }
     
-    public static double minCost(int d, int s, double[][] cost) {
+    /*
+     * Helper method to find the min cost of a subtree
+     * @param left and right values of where the subtree is in the cost array
+     * @return 
+     */
+    
+    private static double minCost(int d, int s, double[][] cost) {
     	double min = Double.MAX_VALUE;
     	int subRoot = -1;
     	
